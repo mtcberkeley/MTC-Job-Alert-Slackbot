@@ -40,62 +40,6 @@ code, set `DEFENSE_COMPANY_BLOCKLIST_EXTRA` as a comma-separated env var
 (e.g. `"kratos,leidos"`) — it adds to, rather than replaces, the
 defaults.
 
-## 1. Create the Slack app
-
-1. Go to <https://api.slack.com/apps> → **Create New App** → **From scratch**.
-2. Name it (e.g. "Internship Scout"), pick your workspace.
-3. Left sidebar → **OAuth & Permissions** → under **Scopes → Bot Token
-   Scopes**, add `chat:write`.
-4. Scroll up → **Install to Workspace** → Allow.
-5. Copy the **Bot User OAuth Token** (starts with `xoxb-`). This is your
-   `SLACK_BOT_TOKEN`.
-6. In Slack, invite the bot to **both** target channels so it's allowed
-   to post there: open each channel and run `/invite @Internship Scout`.
-   The channel IDs are already set in `config.py`
-   (`C05NY1QR325` for internships, `C0BLES1S753` for full-time).
-
-## 2. Run it hourly — two options
-
-### Option A: GitHub Actions (free, no server needed) — recommended
-
-This repo already includes `.github/workflows/hourly.yml`, scheduled via
-cron for `0 * * * *` (top of every hour).
-
-1. Push this folder to a new GitHub repo.
-2. Repo → **Settings → Secrets and variables → Actions**:
-   - **Secrets** tab → **New repository secret** → name `SLACK_BOT_TOKEN`,
-     value your `xoxb-...` token.
-   - (Optional) **Variables** tab → only needed if you want to override
-     the default channel IDs already baked into `config.py`: add
-     `SLACK_INTERNSHIP_CHANNEL` and/or `SLACK_FULLTIME_CHANNEL`.
-3. Repo → **Actions** tab → enable workflows if prompted.
-4. Optionally trigger it once by hand: **Actions → Internship Scout
-   (hourly) → Run workflow**.
-
-The workflow commits the updated `seen_listings.json` back to the repo
-after each run, so state (what's already been posted) persists between
-hourly runs without needing a database.
-
-### Option B: Your own server / machine
-
-```bash
-pip install -r requirements.txt
-export SLACK_BOT_TOKEN="xoxb-..."
-# Channel IDs already default to C05NY1QR325 / C0BLES1S753 in config.py;
-# only set these if you want to override them.
-
-# Run once:
-python main.py
-
-# Or loop forever, once an hour:
-while true; do python main.py; sleep 3600; done
-```
-
-Or add a system cron entry instead of the `while` loop:
-```
-0 * * * * cd /path/to/internship-scout-bot && SLACK_BOT_TOKEN=xoxb-... python3 main.py >> scout.log 2>&1
-```
-
 ## Configuration
 
 All tunable settings live in `config.py` / environment variables:
