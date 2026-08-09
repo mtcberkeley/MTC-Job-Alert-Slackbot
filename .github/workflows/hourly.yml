@@ -28,8 +28,6 @@ jobs:
       - name: Run internship scout
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_INTERNSHIP_CHANNEL: ${{ vars.SLACK_INTERNSHIP_CHANNEL }}
-          SLACK_FULLTIME_CHANNEL: ${{ vars.SLACK_FULLTIME_CHANNEL }}
         run: python main.py
 
       - name: Commit updated seen-listings state
