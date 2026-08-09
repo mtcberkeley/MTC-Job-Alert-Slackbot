@@ -1,4 +1,4 @@
-# MTC Job Alert — Slack Bot
+# MTC Job Alert - Slack Bot
 
 Checks a set of tech-internship and full-time new-grad sources every
 hour, skips anything it's already posted, filters out defense-industry
