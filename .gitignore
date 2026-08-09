@@ -1,0 +1,19 @@
+# Never commit real secrets. SLACK_BOT_TOKEN belongs only in GitHub
+# Actions repo secrets (Settings -> Secrets and variables -> Actions),
+# never in a file in this repo.
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Local run logs, if you redirect output to a file per the README
+*.log
+
+# OS cruft
+.DS_Store
