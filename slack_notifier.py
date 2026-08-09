@@ -24,11 +24,19 @@ def _format_date(epoch: int) -> str:
         return "Date not listed"
 
 
+JOB_TYPE_LABELS = {
+    "internship": ("Internship", ":student:"),
+    "full_time": ("Full-Time", ":briefcase:"),
+}
+
+
 def build_message(listing: dict) -> dict:
     """Build a Slack Block Kit payload (blocks) for one listing."""
     date_str = _format_date(listing["date_posted"])
+    label, emoji = JOB_TYPE_LABELS.get(listing.get("job_type"), ("Job", ":briefcase:"))
+
     text_fallback = (
-        f"{listing['role']} @ {listing['company']} ({listing['location']}) "
+        f"[{label}] {listing['role']} @ {listing['company']} ({listing['location']}) "
         f"— posted {date_str} — {listing['url']}"
     )
     blocks = [
@@ -37,6 +45,7 @@ def build_message(listing: dict) -> dict:
             "text": {
                 "type": "mrkdwn",
                 "text": (
+                    f"{emoji} *{label}*\n"
                     f"*{listing['role']}* @ *{listing['company']}*\n"
                     f":round_pushpin: {listing['location']}   "
                     f":calendar: Posted {date_str}\n"

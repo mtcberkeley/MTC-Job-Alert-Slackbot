@@ -14,10 +14,18 @@ import os
 # bot to both target channels with `/invite @YourBotName`.
 SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN", "")
 
-# Two separate channels: internships go to one, full-time new-grad tech
-# jobs go to the other. Use channel IDs (most reliable for CI/cron use).
-SLACK_INTERNSHIP_CHANNEL = os.environ.get("SLACK_INTERNSHIP_CHANNEL", "C05NY1QR325")
-SLACK_FULLTIME_CHANNEL = os.environ.get("SLACK_FULLTIME_CHANNEL", "C0BLES1S753")
+# All job alerts — internships and full-time — post to this one channel.
+# The message itself notes which type each listing is (see slack_notifier.py).
+SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "C0BPUEWSEM6")
+
+# --- Dry run -----------------------------------------------------------
+#
+# When true, the bot fetches and filters listings exactly as normal but
+# prints what it *would* post instead of calling the Slack API, and does
+# NOT save the seen-ids state (so a dry run never marks listings as
+# already-seen and can be re-run freely). Set DRY_RUN=true for local
+# testing before pointing at real channels.
+DRY_RUN = os.environ.get("DRY_RUN", "false").strip().lower() in ("1", "true", "yes")
 
 # --- Filtering --------------------------------------------------------------
 
@@ -91,8 +99,9 @@ SEEN_STORE_PATH = os.environ.get("SEEN_STORE_PATH", "seen_listings.json")
 # Each source is fetched and normalized independently in sources.py.
 # Add / remove / comment out entries here to change what gets scouted.
 #
-# "job_type" controls routing: "internship" -> SLACK_INTERNSHIP_CHANNEL,
-# "full_time" -> SLACK_FULLTIME_CHANNEL.
+# "job_type" is still tagged per source ("internship" / "full_time") so
+# each Slack message can say which kind of role it is, even though both
+# now post to the same SLACK_CHANNEL.
 
 SOURCES = [
     # --- Internship sources ---

@@ -58,15 +58,18 @@ def passes_filters(listing: dict) -> bool:
 
 
 def run_once() -> int:
-    """One full check-and-post cycle. Returns number of alerts posted."""
-    if not config.SLACK_BOT_TOKEN:
+    """One full check-and-post cycle. Returns number of alerts posted (or
+    would-post count, in dry-run mode)."""
+    if not config.SLACK_BOT_TOKEN and not config.DRY_RUN:
         logger.error(
-            "SLACK_BOT_TOKEN is not set. Export it or add it as a repo/CI secret."
+            "SLACK_BOT_TOKEN is not set. Export it, add it as a repo/CI secret, "
+            "or set DRY_RUN=true to test without a token."
         )
         sys.exit(1)
 
     started_at = datetime.now(timezone.utc).isoformat()
-    logger.info("MTC Job Alert run starting at %s", started_at)
+    mode = " [DRY RUN]" if config.DRY_RUN else ""
+    logger.info("MTC Job Alert run starting at %s%s", started_at, mode)
 
     seen_ids = dedupe.load_seen(config.SEEN_STORE_PATH)
     logger.info("Loaded %d previously-seen listing ids", len(seen_ids))
@@ -81,33 +84,29 @@ def run_once() -> int:
 
     logger.info("%d new listings pass filters and will be posted", len(new_listings))
 
-    internship_listings = [l for l in new_listings if l["job_type"] == "internship"]
-    fulltime_listings = [l for l in new_listings if l["job_type"] == "full_time"]
+    if config.DRY_RUN:
+        logger.info(
+            "DRY RUN — not posting to Slack, not saving seen-ids state. "
+            "Listing details below."
+        )
+        for item in new_listings:
+            logger.info(
+                "  [%s] %s @ %s | %s | %s",
+                item["job_type"].upper(),
+                item["role"],
+                item["company"],
+                item["location"],
+                item["url"],
+            )
+        return len(new_listings)
 
     posted_count = 0
-    if internship_listings:
-        posted = slack_notifier.post_all(
-            config.SLACK_BOT_TOKEN, config.SLACK_INTERNSHIP_CHANNEL, internship_listings
+    if new_listings:
+        posted_count = slack_notifier.post_all(
+            config.SLACK_BOT_TOKEN, config.SLACK_CHANNEL, new_listings
         )
-        logger.info(
-            "Posted %d/%d new internships to the internship channel",
-            posted,
-            len(internship_listings),
-        )
-        posted_count += posted
-
-    if fulltime_listings:
-        posted = slack_notifier.post_all(
-            config.SLACK_BOT_TOKEN, config.SLACK_FULLTIME_CHANNEL, fulltime_listings
-        )
-        logger.info(
-            "Posted %d/%d new full-time jobs to the full-time channel",
-            posted,
-            len(fulltime_listings),
-        )
-        posted_count += posted
-
-    if not new_listings:
+        logger.info("Posted %d/%d new listings to Slack", posted_count, len(new_listings))
+    else:
         logger.info("Nothing new this run.")
 
     # Mark everything we fetched (not just the ones posted) as seen, so a
