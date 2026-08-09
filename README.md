@@ -1,12 +1,12 @@
-# Internship Scout — Slack Bot
+# MTC Job Alert — Slack Bot
 
 Checks a set of tech-internship and full-time new-grad sources every
 hour, skips anything it's already posted, filters out defense-industry
 employers, and drops a concise alert into the right Slack channel with
 **role, company, location, posting date, and a direct apply link**.
 
-- **Internships** → channel `C05NY1QR325`
-- **Full-time / new-grad tech roles** → channel `C0BLES1S753`
+- **Internships** 
+- **Full-time / new-grad tech roles** 
 
 (Both are set in `config.py` as `SLACK_INTERNSHIP_CHANNEL` /
 `SLACK_FULLTIME_CHANNEL`, overridable via env vars.)
